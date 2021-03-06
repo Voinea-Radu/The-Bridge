@@ -1,0 +1,8 @@
+must_be_ingame: "You must be a player."
+no_permission_command: "You do not have the permission."
+wrong_usage_command: "This is not the correct usage for this."
+error_creating_file: "We had a problem creating a file. Please check the console log and contact the developer for mor info!"
+
+#/bridge arena create [name]
+arena_name_already_exists: "This arena already exists"
+
