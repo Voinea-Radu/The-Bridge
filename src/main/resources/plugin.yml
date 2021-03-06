@@ -1,0 +1,5 @@
+name: Bridge
+version: ${project.version}
+main: dev.lightdream.bridge.Bridge
+authors: [ L1ghtDream ]
+website: https://lightdream.tk
