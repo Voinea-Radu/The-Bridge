@@ -16,6 +16,7 @@ public final class Bridge extends JavaPlugin {
     public static CommandHandler commandHandler;
     public static String PLUGIN_NAME = "Bridge";
     public static String PLUGIN_PERMISSION = "bridge.";
+    public static String PLUGIN_MAIN_COMMAND = "bridge";
     public static Logger logger;
     public static FileConfiguration config;
 
@@ -29,12 +30,12 @@ public final class Bridge extends JavaPlugin {
         logger = super.getLogger();
         config = API.loadFile("config.yml", LoadFileType.DEFAULT);
         lang = config.getString("lang");
-        Language.loadLang("lang");
+        Language.loadLang(lang);
     }
 
     @Override
     public void onDisable() {
-
+        //TODO: Save the arenas
     }
 
     public void onReload(){

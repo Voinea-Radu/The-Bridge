@@ -24,14 +24,15 @@ public class CommandHandler {
         this.COMMANDS = new HashMap<>();
         loadCommands();
         registerPermissions();
-        PluginCommand command = plugin.getCommand("skybank");
+        PluginCommand command = plugin.getCommand(Bridge.PLUGIN_MAIN_COMMAND);
         if (command != null) {
             command.setExecutor(new CommandListener(plugin, this));
         }
     }
 
     private void loadCommands() {
-
+        registerCommand(ArenaCommand.class);
+        registerCommand(SetDefaultKitCommand.class);
     }
 
     private void registerCommand(Class<? extends BaseCommand> cmdClass) {
@@ -49,10 +50,10 @@ public class CommandHandler {
     private void registerPermissions() {
         PluginManager pm = Bukkit.getPluginManager();
         COMMANDS.forEach((command, baseCmd) -> {
-            String perm = "skybank." + command;
+            String perm = Bridge.PLUGIN_PERMISSION + command;
             if (pm.getPermission(perm) == null) {
                 Permission permission = new Permission(perm);
-                permission.setDescription(String.format("Grants user access to SkyBank Command command '/skybank %s'", command));
+                permission.setDescription(String.format("Grants user access to " + Bridge.PLUGIN_NAME + " Command command '/" + Bridge.PLUGIN_MAIN_COMMAND + " %s'", command));
                 permission.setDefault(baseCmd.permissionDefault);
                 pm.addPermission(permission);
             }
@@ -69,7 +70,7 @@ public class CommandHandler {
     }
 
     public BaseCommand getCommand(String command) {
-        Preconditions.checkArgument(COMMANDS.containsKey(command), "SkyBank command does not exist: '/skybank %s'", command);
+        Preconditions.checkArgument(COMMANDS.containsKey(command), Bridge.PLUGIN_NAME + "command does not exist: '/" + Bridge.PLUGIN_MAIN_COMMAND + " %s'", command);
         return COMMANDS.get(command);
     }
 

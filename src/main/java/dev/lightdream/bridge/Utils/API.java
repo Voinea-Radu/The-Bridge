@@ -11,7 +11,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @SuppressWarnings("unused")
 public class API {
@@ -83,9 +85,14 @@ public class API {
     }
 
     public static void sendColoredMessage(CommandSender sender, String text){
-        //ArrayList<String> texts = new ArrayList<>();
         for(String var1 : text.split("%newline%"))
             sender.sendMessage(color(var1));
+    }
+
+    public static void sendColoredMessage(List<?> senders, String text){
+        for(Object sender : senders)
+            for(String var1 : text.split("%newline%"))
+                ((CommandSender) sender).sendMessage(color(var1));
     }
 
     public static FileConfiguration loadPlayerDataFile(UUID uuid){

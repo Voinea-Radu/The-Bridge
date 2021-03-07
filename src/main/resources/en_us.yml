@@ -6,3 +6,22 @@ error_creating_file: "We had a problem creating a file. Please check the console
 #/bridge arena create [name]
 arena_name_already_exists: "This arena already exists"
 
+#/bridge arena join [name]
+arena_is_full: "This arena is already full"
+already_in_game: "You are already ingame"
+
+#/bridge setdefaultkit
+default_kit_set: "The default kit has been set"
+
+#Arena starting messages
+60: "Arena will start in {time}!"
+30: "Arena will start in {time}!"
+10: "Arena will start in {time}!"
+5: "Arena will start in {time}!"
+4: "Arena will start in {time}!"
+3: "Arena will start in {time}!"
+2: "Arena will start in {time}!"
+1: "Arena will start in {time}!"
+0: "Arena has started!"
+not_enough_players: "Not enough players are in arena so the counter has stopped"
+
