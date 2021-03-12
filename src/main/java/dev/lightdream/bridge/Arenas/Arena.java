@@ -1,16 +1,29 @@
 package dev.lightdream.bridge.Arenas;
 
-import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
-import com.sun.tools.javac.file.Locations;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.function.operation.Operation;
+import com.sk89q.worldedit.function.operation.Operations;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.session.ClipboardHolder;
 import dev.lightdream.bridge.Bridge;
+import dev.lightdream.bridge.Enums.LoadFileType;
 import dev.lightdream.bridge.Exceptions.ArenaIsFull;
 import dev.lightdream.bridge.Utils.API;
 import dev.lightdream.bridge.Utils.Language;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @SuppressWarnings({"unused", "FieldCanBeLocal", "deprecation", "unchecked", "FieldMayBeFinal"})
@@ -18,38 +31,41 @@ public class Arena {
 
     //Generic
     private final Bridge INSTANCE;
-    private final String language;
 
     //Game Settings
     private final int maxPlayerNumber;
     private final int minPlayerNumber;
-    private final int waitingLocation;
-    private final List<Locations> spawnLocations;
+    private final Location waitingLocation;
+    private final List<Location> spawnLocations;
     private final String gameName;
-    private final ClipboardFormat schematic;
+    private final int winPoints;
+    private final String schematicName;
+    private final Clipboard schematic;
 
     //Game Specific
-    private List<Player> players;
+    private List<Player> players = new ArrayList<>();
 
     //Internal Variables
-    BukkitScheduler startTimer;
+    private BukkitScheduler startTimer;
+    public List<Integer> score = new ArrayList<>();
 
-    public Arena(Bridge instance, String language, int maxPlayerNumber, int minPlayerNumber, int waitingLocation, List<Locations> spawnLocations, String gameName, ClipboardFormat schematic) {
+    public Arena(Bridge instance, int maxPlayerNumber, int minPlayerNumber, Location waitingLocation, List<Location> spawnLocations, String gameName, int winPoints, String schematicName) {
         this.INSTANCE = instance;
-        this.language = language;
         this.maxPlayerNumber = maxPlayerNumber;
         this.minPlayerNumber = minPlayerNumber;
         this.waitingLocation = waitingLocation;
         this.spawnLocations = spawnLocations;
         this.gameName = gameName;
-        this.schematic = schematic;
+        this.winPoints = winPoints;
+        this.schematicName = schematicName;
+        schematic = API.loadArenaSchematic(schematicName);
     }
 
     public void join(Player player) throws ArenaIsFull{
         if(players.size()>maxPlayerNumber)
             throw new ArenaIsFull();
 
-        //TODO: Tp to waiting room
+        player.teleport(waitingLocation);
         players.add(player);
         if(players.size()>minPlayerNumber)
             startCounter();
@@ -63,7 +79,7 @@ public class Arena {
             stopCounter();
     }
 
-    public void startCounter(){
+    private void startCounter(){
         startTimer = Bukkit.getServer().getScheduler();
         startTimer.runTaskTimer(Bridge.INSTANCE, new BukkitRunnable() {
             List<Integer> messageTimes = (List<Integer>) Bridge.config.getList("arena-start-message-times");
@@ -79,21 +95,102 @@ public class Arena {
         }, 0L, 20L);
     }
 
-    public void stopCounter(){
-        startTimer.cancelAllTasks();
+    private void stopCounter(){
+        startTimer.cancelTask(0);
         broadcastMessage(Language.not_enough_players);
     }
 
-    public void broadcastMessage(String message){
+    private void broadcastMessage(String message){
         API.sendColoredMessage(players, message);
     }
 
-    public void start(){
-        //TODO: Load the schematic for that specific world (https://matthewmiller.dev/blog/how-to-load-and-save-schematics-with-the-worldedit-api/#register-a-custom-schematic-format)
-        //TODO: Give inventories to players
-        //TODO: TP players
-        //TODO: Create the portal
+    private void start(){
+        giveInventory(players);
+        tpToSpawn(players);
+    }
+
+    private void end(){
+        loadSchem();
+    }
+
+    public void onDeath(Player player){
+        tpToSpawn(Collections.singletonList(player));
+        giveInventory(Collections.singletonList(player));
+    }
+
+    public void onScore(Player player){
+        int index = players.indexOf(player);
+        score.set(index, score.get(index) + 1);
+        giveInventory(players);
+        tpToSpawn(players);
+    }
+
+    private void loadSchem(){
+        try (EditSession editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(BukkitAdapter.adapt(waitingLocation.getWorld()), -1)) {
+            Operation operation = new ClipboardHolder(schematic)
+                    .createPaste(editSession)
+                    .to(BlockVector3.at(waitingLocation.getBlockX(), waitingLocation.getBlockY(), waitingLocation.getBlockZ()))
+                    .ignoreAirBlocks(false)
+                    .build();
+            Operations.complete(operation);
+        } catch (WorldEditException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void tpToSpawn(List<Player> players){
+        for(int i=0;i<players.size();i++)
+            players.get(i).teleport(spawnLocations.get(i));
+    }
+
+    private void giveInventory(List<Player> players){
+        for(Player player : players){
+            FileConfiguration inventory = API.loadFile("inventory.yml", LoadFileType.DEFAULT);
+            FileConfiguration armour = API.loadFile("armour.yml", LoadFileType.DEFAULT);
+
+            player.getInventory().setContents(inventory.getList("inventory").toArray(new ItemStack[0]));
+            player.getInventory().setArmorContents(inventory.getList("armour").toArray(new ItemStack[0]));
+        }
     }
 
 
+    public Bridge getINSTANCE() {
+        return INSTANCE;
+    }
+
+    public int getMaxPlayerNumber() {
+        return maxPlayerNumber;
+    }
+
+    public int getMinPlayerNumber() {
+        return minPlayerNumber;
+    }
+
+    public Location getWaitingLocation() {
+        return waitingLocation;
+    }
+
+    public List<Location> getSpawnLocations() {
+        return spawnLocations;
+    }
+
+    public String getGameName() {
+        return gameName;
+    }
+
+    public int getWinPoints() {
+        return winPoints;
+    }
+
+    public String getSchematicName() {
+        return schematicName;
+    }
+
+    public Clipboard getSchematic() {
+        return schematic;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
 }

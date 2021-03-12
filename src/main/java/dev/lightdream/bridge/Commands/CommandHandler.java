@@ -33,6 +33,8 @@ public class CommandHandler {
     private void loadCommands() {
         registerCommand(ArenaCommand.class);
         registerCommand(SetDefaultKitCommand.class);
+        registerCommand(SetupCommand.class);
+        registerCommand(JoinCommand.class);
     }
 
     private void registerCommand(Class<? extends BaseCommand> cmdClass) {

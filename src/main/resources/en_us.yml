@@ -9,9 +9,20 @@ arena_name_already_exists: "This arena already exists"
 #/bridge arena join [name]
 arena_is_full: "This arena is already full"
 already_in_game: "You are already ingame"
+arena_does_not_exist: "Arena does not exist"
+joined_arena: "Arena joined"
 
 #/bridge setdefaultkit
 default_kit_set: "The default kit has been set"
+
+#/bridge setup
+#All commands can be replaced with placeholder {command}
+set_waiting_location: "{command}"
+add_player_spawn_location: "{command} [x{times}]"
+setup_done: "/bridge setup finish"
+setup_done_command: "The arena {name} has been seted up"
+not_the_creator: "Only one person can create an arena at a time if you think this is a mistake use /bridge setup cancel"
+
 
 #Arena starting messages
 60: "Arena will start in {time}!"

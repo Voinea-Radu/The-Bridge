@@ -1,0 +1,19 @@
+arena-names: []
+#  - "arena1"
+#  - "arena2"
+#  - "arena3"
+arenas: []
+#  - arena1:
+#      name: "arena1"
+#      maxPlayerNumber: 2
+#      maxPlayerNumber: 2
+#      waiting-world: "arena1"
+#      waiting-x: "1000"
+#      waiting-y: "100"
+#      waiting-z: "1000"
+#      spawn-world: "arena1"
+#      spawn-x: "900 1100"
+#      spawn-y: "60 60"
+#      spawn-z: "900 1100"
+#      winPoints: 100
+#      schematicName: "arena1"
